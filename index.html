@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>R/place Clone</title>
+    <style>
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(500, 1px);
+        grid-template-rows: repeat(500, 1px);
+      }
+      .pixel {
+        width: 1px;
+        height: 1px;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid"></div>
+    <form id="place-form">
+      <input type="number" name="x" placeholder="X" required>
+      <input type="number" name="y" placeholder="Y" required>
+      <input type="color" name="color" required>
+      <button type="submit">Place</button>
+    </form>
+    <script>
+      const form = document.getElementById('place-form');
+      const grid = document.querySelector('.grid');
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const { x, y, color } = form.elements;
+        await fetch('/place', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            x: Number(x.value),
+            y: Number(y.value),
+            color: color.value,
+          }),
+        });
+        x.value = '';
+        y.value = '';
+        grid.innerHTML = '';
+        await loadPixels();
+      });
+
+      async function loadPixels() {
+        const response = await fetch('/pixels');
+        const pixels = await response.json();
+        pixels.forEach((pixel) => {
+          const { x, y, color } = pixel;
+          const div = document.createElement('div');
+          div.setAttribute('class', 'pixel');
+          div.setAttribute(
+            'style',
+            `grid-column: ${x + 1} / ${x + 2}; grid-row: ${y + 1} / ${y + 2}; background-color: ${color}`
+          );
+          grid.appendChild(div);
+        });
+      }
+
+      loadPixels();
+    </script>
+  </body>
+</html>
