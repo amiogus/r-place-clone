@@ -3,23 +3,30 @@
   <head>
     <title>R/place Clone</title>
     <style>
+      body {
+        cursor: crosshair;
+        user-select: none;
+      }
       .grid {
         display: grid;
         grid-template-columns: repeat(500, 1px);
         grid-template-rows: repeat(500, 1px);
+        transform-origin: top left;
+        transition: transform 0.2s;
       }
       .pixel {
-        width: 1px;
-        height: 1px;
+        width: 2px;
+        height: 2px;
         border: none;
+      }
+      .grid.zoomed {
+        transform: scale(2);
       }
     </style>
   </head>
   <body>
     <div class="grid"></div>
     <form id="place-form">
-      <input type="number" name="x" placeholder="X" required>
-      <input type="number" name="y" placeholder="Y" required>
       <input type="color" name="color" required>
       <button type="submit">Place</button>
     </form>
@@ -39,10 +46,34 @@
             color: color.value,
           }),
         });
-        x.value = '';
-        y.value = '';
         grid.innerHTML = '';
         await loadPixels();
+      });
+
+      grid.addEventListener('click', (event) => {
+        const x = Math.floor(event.offsetX / 2);
+        const y = Math.floor(event.offsetY / 2);
+        const color = form.elements.color.value;
+        fetch('/place', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ x, y, color }),
+        });
+        grid.innerHTML = '';
+        loadPixels();
+      });
+
+      let isZoomed = false;
+
+      grid.addEventListener('wheel', (event) => {
+        event.preventDefault();
+        if (event.deltaY < 0 && !isZoomed) {
+          grid.classList.add('zoomed');
+          isZoomed = true;
+        } else if (event.deltaY > 0 && isZoomed) {
+          grid.classList.remove('zoomed');
+          isZoomed = false;
+        }
       });
 
       async function loadPixels() {
