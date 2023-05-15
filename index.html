@@ -30,9 +30,14 @@
       <input type="color" name="color" required>
       <button type="submit">Place</button>
     </form>
+    <button id="zoom-in">+</button>
+    <button id="zoom-out">-</button>
     <script>
       const form = document.getElementById('place-form');
       const grid = document.querySelector('.grid');
+      const zoomInButton = document.getElementById('zoom-in');
+      const zoomOutButton = document.getElementById('zoom-out');
+      let isZoomed = false;
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -63,16 +68,34 @@
         loadPixels();
       });
 
-      let isZoomed = false;
-
-      grid.addEventListener('wheel', (event) => {
-        event.preventDefault();
-        if (event.deltaY < 0 && !isZoomed) {
+      zoomInButton.addEventListener('click', () => {
+        if (!isZoomed) {
           grid.classList.add('zoomed');
           isZoomed = true;
-        } else if (event.deltaY > 0 && isZoomed) {
+        }
+      });
+
+      zoomOutButton.addEventListener('click', () => {
+        if (isZoomed) {
           grid.classList.remove('zoomed');
           isZoomed = false;
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        const x = event.code.startsWith('KeyA') || event.code.startsWith('ArrowLeft')
+          ? -1
+          : event.code.startsWith('KeyD') || event.code.startsWith('ArrowRight')
+          ? 1
+          : 0;
+        const y = event.code.startsWith('KeyW') || event.code.startsWith('ArrowUp')
+          ? -1
+          : event.code.startsWith('KeyS') || event.code.startsWith('ArrowDown')
+          ? 1
+          : 0;
+        if (x !== 0 || y !== 0) {
+          event.preventDefault();
+          grid.scrollBy(x * 10, y * 10);
         }
       });
 
