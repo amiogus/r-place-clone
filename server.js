@@ -37,9 +37,9 @@ app.post('/place', async (req, res) => {
     const pixel = new Pixel({ x, y, color });
     await pixel.save();
   }
-  res.send({ success: true });
+  res.send({ message: 'Pixel placed successfully.' });
 });
 
 app.listen(port, () => {
-  console.log(`Server started on port ${port}`);
+  console.log(`Server listening on port ${port}.`);
 });
